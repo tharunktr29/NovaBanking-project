@@ -1,0 +1,46 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: transaction-service
+  datasource:
+    url: ${TRANSACTION_DB_URL:jdbc:postgresql://localhost:5432/novabank_transaction}
+    username: ${TRANSACTION_DB_USERNAME:novabank}
+    password: ${TRANSACTION_DB_PASSWORD:novabank_dev_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+novabank:
+  jwt:
+    issuer: ${JWT_ISSUER:novabank-auth-service}
+    secret: ${JWT_SECRET:dev-only-change-this-secret-key-32-bytes-minimum}
+  dev-tools:
+    enabled: ${NOVABANK_DEV_TOOLS_ENABLED:false}
+  transactions:
+    export-max-days: ${TRANSACTION_EXPORT_MAX_DAYS:366}
+    export-row-limit: ${TRANSACTION_EXPORT_ROW_LIMIT:10000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"

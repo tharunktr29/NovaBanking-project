@@ -1,0 +1,48 @@
+# Java and Maven
+target/
+.m2-cache/
+*.class
+*.log
+
+# Maven Wrapper must remain tracked
+!.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+node_modules/
+dist/
+coverage/
+.vite/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+build/
+
+# VS Code
+.vscode/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Operating-system files
+.DS_Store
+Thumbs.db
