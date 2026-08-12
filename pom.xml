@@ -56,6 +56,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- CVE-2026-42198: Unbounded PBKDF2 iterations in SCRAM authentication -->
+            <!-- CVE-2026-54291: Silent channel-binding authentication downgrade -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.12</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
