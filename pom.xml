@@ -17,12 +17,15 @@
         <module>services/customer-service</module>
         <module>services/account-service</module>
         <module>services/transaction-service</module>
+        <module>services/card-service</module>
+        <module>services/payment-service</module>
+        <module>services/engagement-service</module>
         <module>services/api-gateway</module>
     </modules>
 
     <properties>
-        <java.version>25</java.version>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.4.5</spring-boot.version>
         <spring-cloud.version>2024.0.1</spring-cloud.version>
@@ -63,7 +66,7 @@
                 <artifactId>postgresql</artifactId>
                 <version>42.7.12</version>
             </dependency>
-            <!-- Java 25 support: Upgrade Mockito for Byte Buddy compatibility -->
+            <!-- Keep Mockito and Byte Buddy aligned for modern JDK compatibility. -->
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -74,7 +77,7 @@
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>5.14.0</version>
             </dependency>
-            <!-- Java 25 support: Upgrade Byte Buddy -->
+            <!-- Explicit Byte Buddy version used by the test toolchain. -->
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>

@@ -1,0 +1,44 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: card-service
+  datasource:
+    url: ${CARD_DB_URL:jdbc:postgresql://localhost:5432/novabank_card}
+    username: ${CARD_DB_USERNAME:novabank}
+    password: ${CARD_DB_PASSWORD:novabank_dev_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+novabank:
+  jwt:
+    issuer: ${JWT_ISSUER:novabank-auth-service}
+    secret: ${JWT_SECRET:dev-only-change-this-secret-key-32-bytes-minimum}
+  cards:
+    account-service-uri: ${ACCOUNT_SERVICE_URI:http://localhost:8083}
+    internal-timeout-ms: ${CARD_INTERNAL_TIMEOUT_MS:2000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"

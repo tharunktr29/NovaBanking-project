@@ -1,0 +1,17 @@
+server:
+  port: 8087
+spring:
+  application.name: engagement-service
+  datasource:
+    url: ${ENGAGEMENT_DB_URL:jdbc:postgresql://localhost:5432/novabank_engagement}
+    username: ${ENGAGEMENT_DB_USERNAME:novabank}
+    password: ${ENGAGEMENT_DB_PASSWORD:novabank_dev_password}
+  flyway.enabled: true
+novabank:
+  jwt:
+    issuer: ${JWT_ISSUER:novabank-auth-service}
+    secret: ${JWT_SECRET:dev-only-change-this-secret-key-32-bytes-minimum}
+  documents:
+    encryption-key: ${DOCUMENT_ENCRYPTION_KEY:dev-only-document-key-change-me}
+  account-service-uri: ${ACCOUNT_SERVICE_URI:http://localhost:8083}
+management.endpoints.web.exposure.include: health,info,prometheus
