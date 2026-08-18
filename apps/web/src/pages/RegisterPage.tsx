@@ -105,7 +105,7 @@ export function RegisterPage() {
           Build banking features without handling real money.
         </Typography>
         <Typography>
-          This frontend talks to the auth, customer, and account services through the gateway. Card and payment workflows remain intentionally unavailable until later phases.
+          This frontend talks to NovaBank services through the gateway. All cards and money movement are fictional learning simulations.
         </Typography>
       </Box>
     </Box>

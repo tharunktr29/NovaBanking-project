@@ -1,0 +1,14 @@
+package com.novabank.payment.domain;
+
+public enum PaymentFailureCode {
+    INSUFFICIENT_FUNDS,
+    ACCOUNT_NOT_FOUND,
+    ACCOUNT_NOT_ELIGIBLE,
+    CARD_NOT_FOUND,
+    CARD_NOT_ELIGIBLE,
+    PAYEE_NOT_FOUND,
+    PAYEE_NOT_VERIFIED,
+    CURRENCY_MISMATCH,
+    SERVICE_UNAVAILABLE,
+    PROCESSING_ERROR
+}

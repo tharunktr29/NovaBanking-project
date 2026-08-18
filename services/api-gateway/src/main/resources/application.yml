@@ -54,6 +54,31 @@ spring:
               args:
                 retries: 2
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+        - id: card-service
+          uri: ${CARD_SERVICE_URI:http://localhost:8085}
+          predicates:
+            - Path=/api/cards/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+        - id: payment-service-payments
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/payments/**
+        - id: payment-service-transfers
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/transfers/**
+        - id: payment-service-payees
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/payees/**
+        - id: engagement-service
+          uri: ${ENGAGEMENT_SERVICE_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/statements/**,/api/disputes/**,/api/notifications/**,/api/notification-preferences/**
 
 novabank:
   jwt:

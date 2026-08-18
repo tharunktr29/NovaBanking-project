@@ -2,6 +2,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import LockIcon from '@mui/icons-material/Lock';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SendIcon from '@mui/icons-material/Send';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -30,6 +31,9 @@ import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { RecentTransactionsCard, TransactionsPanel } from '../components/TransactionViews';
+import { CardsPanel } from '../components/CardsPanel';
+import { PaymentsPanel } from '../components/PaymentsPanel';
+import { PhaseSixPanel } from '../components/PhaseSixPanel';
 import type { Account } from '../features/accounts/accountsSlice';
 import { fetchAccounts, updateAccountNickname } from '../features/accounts/accountsSlice';
 import { changePassword, fetchCurrentUser, refreshSession } from '../features/auth/authSlice';
@@ -205,6 +209,7 @@ export function DashboardPage() {
           <Tab icon={<SendIcon />} iconPosition="start" label="Transfers" value="transfers" />
           <Tab icon={<CreditCardIcon />} iconPosition="start" label="Cards" value="cards" />
           <Tab icon={<PaymentsIcon />} iconPosition="start" label="Payments" value="payments" />
+          <Tab icon={<NotificationsIcon />} iconPosition="start" label="Statements & Disputes" value="engagement" />
           <Tab icon={<LockIcon />} iconPosition="start" label="Security" value="security" />
         </Tabs>
       </Card>
@@ -281,15 +286,19 @@ export function DashboardPage() {
       </TabPanel>
 
       <TabPanel active={activeTab} value="transfers">
-        <ComingSoon title="Transfers" copy="Transfer workflows are not implemented in Phase 2. No fake transfer backend is exposed." />
+        <PaymentsPanel initialMode="INTERNAL" />
       </TabPanel>
 
       <TabPanel active={activeTab} value="cards">
-        <ComingSoon title="Cards" copy="Card activation, lock/unlock, and limits will come in a later card-service phase." />
+        <CardsPanel />
       </TabPanel>
 
       <TabPanel active={activeTab} value="payments">
-        <ComingSoon title="Payments" copy="Bill payment scheduling and status tracking will come in a later payment-service phase." />
+        <PaymentsPanel initialMode="CARD" />
+      </TabPanel>
+
+      <TabPanel active={activeTab} value="engagement">
+        <PhaseSixPanel accounts={accounts.accounts} />
       </TabPanel>
 
       <TabPanel active={activeTab} value="security">

@@ -74,7 +74,7 @@ services:
         condition: service_healthy
     environment:
       PGPASSWORD: novabank_dev_password
-    command: ["sh", "-c", "psql -h postgres -U novabank -d novabank_admin -tc \"SELECT 1 FROM pg_database WHERE datname = 'novabank_transaction'\" | grep -q 1 || psql -h postgres -U novabank -d novabank_admin -c \"CREATE DATABASE novabank_transaction\""]
+    command: ["sh", "-c", "for db in novabank_transaction novabank_card novabank_payment novabank_engagement; do psql -h postgres -U novabank -d novabank_admin -tc \"SELECT 1 FROM pg_database WHERE datname = '$$db'\" | grep -q 1 || psql -h postgres -U novabank -d novabank_admin -c \"CREATE DATABASE $$db\"; done"]
 
   auth-service:
     profiles: ["app"]
@@ -113,11 +113,20 @@ services:
         condition: service_started
       transaction-service:
         condition: service_started
+      card-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      engagement-service:
+        condition: service_started
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       CUSTOMER_SERVICE_URI: http://customer-service:8082
       ACCOUNT_SERVICE_URI: http://account-service:8083
       TRANSACTION_SERVICE_URI: http://transaction-service:8084
+      CARD_SERVICE_URI: http://card-service:8085
+      PAYMENT_SERVICE_URI: http://payment-service:8086
+      ENGAGEMENT_SERVICE_URI: http://engagement-service:8087
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: dev-only-change-this-secret-key-32-bytes-minimum
@@ -200,6 +209,68 @@ services:
       timeout: 5s
       retries: 10
 
+  card-service:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: services/card-service/Dockerfile
+    container_name: novabank-card-service
+    depends_on:
+      postgres-db-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      account-service:
+        condition: service_started
+    environment:
+      CARD_DB_URL: jdbc:postgresql://postgres:5432/novabank_card
+      CARD_DB_USERNAME: novabank
+      CARD_DB_PASSWORD: novabank_dev_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: dev-only-change-this-secret-key-32-bytes-minimum
+      ACCOUNT_SERVICE_URI: http://account-service:8083
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8085/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  payment-service:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: novabank-payment-service
+    depends_on:
+      postgres-db-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      account-service:
+        condition: service_started
+      card-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
+    environment:
+      PAYMENT_DB_URL: jdbc:postgresql://postgres:5432/novabank_payment
+      PAYMENT_DB_USERNAME: novabank
+      PAYMENT_DB_PASSWORD: novabank_dev_password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: dev-only-change-this-secret-key-32-bytes-minimum
+      ACCOUNT_SERVICE_URI: http://account-service:8083
+      CARD_SERVICE_URI: http://card-service:8085
+      TRANSACTION_SERVICE_URI: http://transaction-service:8084
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8086/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   web:
     profiles: ["app"]
     build:
@@ -210,6 +281,27 @@ services:
         condition: service_started
     ports:
       - "5173:80"
+
+  engagement-service:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: services/engagement-service/Dockerfile
+    container_name: novabank-engagement-service
+    depends_on:
+      postgres-db-init:
+        condition: service_completed_successfully
+      account-service:
+        condition: service_started
+    environment:
+      ENGAGEMENT_DB_URL: jdbc:postgresql://postgres:5432/novabank_engagement
+      ENGAGEMENT_DB_USERNAME: novabank
+      ENGAGEMENT_DB_PASSWORD: novabank_dev_password
+      JWT_SECRET: dev-only-change-this-secret-key-32-bytes-minimum
+      DOCUMENT_ENCRYPTION_KEY: dev-only-document-key-change-me
+      ACCOUNT_SERVICE_URI: http://account-service:8083
+    ports:
+      - "8087:8087"
 
 volumes:
   postgres-data:
