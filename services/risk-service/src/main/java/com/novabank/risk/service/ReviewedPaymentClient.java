@@ -1,0 +1,3 @@
+package com.novabank.risk.service;
+import com.novabank.risk.config.RiskProperties; import org.springframework.http.HttpHeaders; import org.springframework.stereotype.Component; import org.springframework.web.client.RestClient; import java.util.UUID;
+@Component public class ReviewedPaymentClient {private final RestClient client;public ReviewedPaymentClient(RiskProperties p){client=RestClient.builder().baseUrl(p.paymentServiceUri()).build();}public void decide(UUID payment,boolean approved,String auth,UUID corr){client.post().uri("/api/payments/internal/risk/{id}/{action}",payment,approved?"approve":"reject").header(HttpHeaders.AUTHORIZATION,auth).header("X-Correlation-ID",corr.toString()).retrieve().toBodilessEntity();}}

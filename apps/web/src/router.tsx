@@ -8,11 +8,13 @@ import { LogoutPage } from './pages/LogoutPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { RiskOperationsPage } from './pages/RiskOperationsPage';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const isAuthenticated = useAppSelector((state) => state.auth.status === 'authenticated');
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
+function RoleRoute({children}:{children:JSX.Element}){const role=useAppSelector(s=>s.auth.role);return ['FRAUD_ANALYST','OPERATIONS_ADMIN','SUPPORT_AGENT'].includes(role??'')?children:<Navigate to="/dashboard" replace/>}
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/dashboard" replace /> },
@@ -29,6 +31,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     )
   },
+  {path:'/risk-operations',element:<ProtectedRoute><RoleRoute><RiskOperationsPage/></RoleRoute></ProtectedRoute>},
   { path: '/logout', element: <LogoutPage /> },
   { path: '*', element: <NotFoundPage /> }
 ]);

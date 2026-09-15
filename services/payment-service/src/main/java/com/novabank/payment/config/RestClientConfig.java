@@ -24,6 +24,8 @@ public class RestClientConfig {
     RestClient transactionRestClient(PaymentProperties properties) {
         return client(properties.transactionServiceUri(), properties.internalTimeoutMs());
     }
+    @Bean
+    RestClient riskRestClient(PaymentProperties properties) { return client(properties.riskServiceUri(), properties.internalTimeoutMs()); }
 
     private RestClient client(String baseUrl, int timeoutMs) {
         var settings = ClientHttpRequestFactorySettings.DEFAULTS

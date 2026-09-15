@@ -40,6 +40,7 @@ public class PaymentService {
     private final PayeeService payeeService;
     private final OutboxService outboxService;
     private final JwtService jwtService;
+    private final RiskClient riskClient;
 
     public PaymentService(
             PaymentOrderRepository paymentRepository,
@@ -50,7 +51,8 @@ public class PaymentService {
             TransactionHistoryClient transactionHistoryClient,
             PayeeService payeeService,
             OutboxService outboxService,
-            JwtService jwtService
+            JwtService jwtService,
+            RiskClient riskClient
     ) {
         this.paymentRepository = paymentRepository;
         this.historyRepository = historyRepository;
@@ -61,6 +63,7 @@ public class PaymentService {
         this.payeeService = payeeService;
         this.outboxService = outboxService;
         this.jwtService = jwtService;
+        this.riskClient = riskClient;
     }
 
     @Transactional
@@ -180,6 +183,23 @@ public class PaymentService {
         if (order.getStatus() == PaymentStatus.SCHEDULED) {
             transition(order, PaymentStatus.PENDING, "SCHEDULE_DUE", order.getCorrelationId());
         }
+        var assessment = riskClient.assess(order, authHeader);
+        order.setRiskAssessmentId(assessment.assessmentId());
+        order.setCustomerSafeReason(assessment.customerSafeReason());
+        if ("REVIEW".equals(assessment.decision())) {
+            transition(order, PaymentStatus.UNDER_REVIEW, "SECURITY_REVIEW", order.getCorrelationId());
+            outboxService.add(order, "PaymentUnderReview");
+            return;
+        }
+        if ("DENY".equals(assessment.decision())) {
+            transition(order, PaymentStatus.DECLINED, "SECURITY_CHECK_DECLINED", order.getCorrelationId());
+            outboxService.add(order, "PaymentDeclined");
+            return;
+        }
+        postExactlyOnce(order, authHeader);
+    }
+
+    private void postExactlyOnce(PaymentOrder order, String authHeader) {
         transition(order, PaymentStatus.PROCESSING, "PROCESSING_STARTED", order.getCorrelationId());
         try {
             accountClient.postLedger(new PostLedgerTransactionRequest(
@@ -208,6 +228,23 @@ public class PaymentService {
             fail(order, failureCode(ex.code()), ex.getMessage(), order.getCorrelationId());
             throw ex;
         }
+    }
+
+    @Transactional
+    public PaymentResponse approveReviewed(UUID paymentId, String authHeader, UUID correlationId) {
+        var order = paymentRepository.findWithLockById(paymentId).orElseThrow(() -> new PaymentException(HttpStatus.NOT_FOUND, "PAYMENT_NOT_FOUND", "Payment was not found"));
+        if (order.getStatus() == PaymentStatus.COMPLETED) return mapper.toResponse(order);
+        if (order.getStatus() != PaymentStatus.UNDER_REVIEW) throw new PaymentException(HttpStatus.CONFLICT, "PAYMENT_NOT_UNDER_REVIEW", "Payment is not awaiting review");
+        var ownerAuthorization = "Bearer " + jwtService.createInternalAccessToken(order.getCustomerId());
+        postExactlyOnce(order, ownerAuthorization); return mapper.toResponse(order);
+    }
+
+    @Transactional
+    public PaymentResponse rejectReviewed(UUID paymentId, UUID correlationId) {
+        var order = paymentRepository.findWithLockById(paymentId).orElseThrow(() -> new PaymentException(HttpStatus.NOT_FOUND, "PAYMENT_NOT_FOUND", "Payment was not found"));
+        if (order.getStatus() == PaymentStatus.DECLINED) return mapper.toResponse(order);
+        if (order.getStatus() != PaymentStatus.UNDER_REVIEW) throw new PaymentException(HttpStatus.CONFLICT, "PAYMENT_NOT_UNDER_REVIEW", "Payment is not awaiting review");
+        order.setCustomerSafeReason("This payment was not approved after security review"); transition(order, PaymentStatus.DECLINED, "REVIEW_REJECTED", correlationId); outboxService.add(order, "PaymentReviewRejected"); return mapper.toResponse(order);
     }
 
     private void recordHistoryProjection(PaymentOrder order, String authHeader) {

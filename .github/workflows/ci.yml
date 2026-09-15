@@ -1,0 +1,47 @@
+name: NovaBank CI
+on: {push: {branches: [main, feature/microservices-update]}, pull_request: {}}
+permissions: {contents: read, security-events: write}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "21", cache: maven}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22", cache: npm, cache-dependency-path: apps/web/package-lock.json}
+      - name: Backend verification
+        run: mvn -B clean verify
+      - name: Frontend verification
+        working-directory: apps/web
+        run: npm ci && npm test && npm run build
+      - name: Compose validation
+        run: docker compose --profile app --profile observability config --quiet
+      - name: Build application images
+        run: docker compose --profile app build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: test-reports, path: "**/target/surefire-reports/**", if-no-files-found: ignore}
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "21", cache: maven}
+      - name: Dependency audit and SBOM
+        run: mvn -B -DskipTests org.owasp:dependency-check-maven:check org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env: {GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"}
+      - name: Static analysis
+        run: mvn -B -DskipTests com.github.spotbugs:spotbugs-maven-plugin:check
+      - name: Build and scan representative image
+        run: docker build -f services/api-gateway/Dockerfile -t novabank-api-gateway:ci .
+      - uses: aquasecurity/trivy-action@0.28.0
+        with: {image-ref: "novabank-api-gateway:ci", format: sarif, output: trivy.sarif, severity: "CRITICAL,HIGH", exit-code: "1"}
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with: {sarif_file: trivy.sarif}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: sbom, path: target/bom.json, if-no-files-found: ignore}

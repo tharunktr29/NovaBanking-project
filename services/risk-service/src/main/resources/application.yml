@@ -1,0 +1,31 @@
+server:
+  port: 8088
+spring:
+  application.name: risk-service
+  datasource:
+    url: ${RISK_DB_URL:jdbc:postgresql://localhost:5432/novabank_risk}
+    username: ${RISK_DB_USERNAME:novabank}
+    password: ${RISK_DB_PASSWORD:novabank_dev_password}
+  flyway.enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+novabank:
+  jwt:
+    issuer: ${JWT_ISSUER:novabank-auth-service}
+    secret: ${JWT_SECRET:dev-only-change-this-secret-key-32-bytes-minimum}
+  risk:
+    rule-version: ${RISK_RULE_VERSION:2026.08.1}
+    high-value-review: ${RISK_HIGH_VALUE_REVIEW:5000.00}
+    high-value-deny: ${RISK_HIGH_VALUE_DENY:25000.00}
+    velocity-count: ${RISK_VELOCITY_COUNT:4}
+    velocity-window-minutes: ${RISK_VELOCITY_WINDOW_MINUTES:10}
+    payment-service-uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+management:
+  endpoints.web.exposure.include: health,info,prometheus
+  endpoint.health.probes.enabled: true
+  metrics.tags.service: ${spring.application.name}
+  tracing.sampling.probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}

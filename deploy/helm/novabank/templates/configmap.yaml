@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: novabank-runtime
+  labels: {app.kubernetes.io/name: novabank, app.kubernetes.io/part-of: novabank}
+data:
+  NOVABANK_ENVIRONMENT: {{ .Values.global.environment | quote }}
+  TRACING_SAMPLING_PROBABILITY: {{ .Values.global.tracingSamplingProbability | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.global.otlpEndpoint | quote }}
+  NOVABANK_LOG_FORMAT: "json"

@@ -1,0 +1,12 @@
+global: {environment: development}
+services:
+  api-gateway: {replicas: 1}
+  auth-service: {replicas: 1}
+  customer-service: {replicas: 1}
+  account-service: {replicas: 1}
+  transaction-service: {replicas: 1}
+  card-service: {replicas: 1}
+  payment-service: {replicas: 1}
+  engagement-service: {replicas: 1}
+  web: {replicas: 1}
+autoscaling: {enabled: false}

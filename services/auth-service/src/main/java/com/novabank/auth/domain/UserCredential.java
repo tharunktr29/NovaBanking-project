@@ -1,6 +1,7 @@
 package com.novabank.auth.domain;
 
 import jakarta.persistence.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,9 +12,8 @@ import java.util.UUID;
                 @Index(name = "idx_user_credentials_email", columnList = "email"),
                 @Index(name = "idx_user_credentials_username", columnList = "username")
         })
-public class UserCredential {
+public class UserCredential implements Persistable<UUID> {
     @Id
-    @GeneratedValue
     private UUID id;
 
     @Column(nullable = false, unique = true, length = 80)
@@ -49,6 +49,9 @@ public class UserCredential {
 
     @PrePersist
     void prePersist() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
         var now = Instant.now();
         createdAt = now;
         updatedAt = now;
@@ -59,8 +62,15 @@ public class UserCredential {
         updatedAt = Instant.now();
     }
 
+    @Override
     public UUID getId() {
         return id;
+    }
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return createdAt == null;
     }
 
     public void setId(UUID id) {

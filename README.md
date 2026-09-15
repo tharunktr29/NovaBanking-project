@@ -4,7 +4,7 @@ NovaBank is a production-style fictional online banking platform for learning, i
 
 ## Current phase
 
-Phase 6 is implemented as a Java 21/Spring Boot microservices application with a React, Vite, TypeScript, and Redux Toolkit frontend.
+Phase 7 is implemented as a Java 21/Spring Boot microservices application with production-readiness tooling around the existing Phase 1–6 banking features.
 
 - `shared-kernel` provides shared API errors, correlation, and `BankingEvent` contracts only.
 - `auth-service` handles registration, login, JWT access tokens, refresh-token rotation, logout, password reset, mock MFA, password changes, refresh-token revocation, and login activity.
@@ -196,3 +196,28 @@ http://localhost:8080
 ## Phase 6 statements, disputes, and notifications
 
 Phase 6 adds fictional statement generation with AES-GCM encrypted database documents, customer-scoped downloads, dispute intake and status tracking, idempotent ledger-backed provisional credits, in-app notifications, and notification preferences. Email delivery remains a local simulation: preferences are persisted, but NovaBank does not contact external mail providers.
+
+## Phase 7 operations and observability
+
+Phase 7 adds Prometheus metrics, OpenTelemetry tracing, configurable JSON logs, Tempo, Loki, Alloy, provisioned Grafana dashboards, example alert rules, bounded Kafka retry/dead-letter handling, timeouts and circuit-breaker configuration, graceful shutdown, health probes, hardened non-root images, CI security/quality checks, Helm resources, safe read-only k6 tests, AWS reference documentation, and operational runbooks. It adds no new banking functionality.
+
+Start application and observability profiles:
+
+```bash
+docker compose --profile app --profile observability up -d --build
+docker compose --profile app --profile observability ps
+```
+
+Local URLs:
+
+- NovaBank: `http://localhost:5173`
+- Gateway: `http://localhost:8080`
+- Grafana: `http://localhost:3001` (3000 was already occupied in the verified Windows environment)
+- Prometheus: `http://localhost:9090`
+- Tempo: `http://localhost:3200`
+- Loki: `http://localhost:3100`
+- OTLP gRPC/HTTP: `4317` / `4318`
+
+Copy `.env.example` to an ignored `.env` and replace the local Grafana password. Prometheus endpoints are scraped directly on the internal Compose network and are not routed through the public gateway. Full local trace sampling defaults to 100%; the Helm production example uses 10%. See `docs/PHASE7_OPERATIONS.md` and `docs/AWS_REFERENCE_DEPLOYMENT.md`.
+
+Known limitations: the local email channel is simulated; the local Docker socket is mounted read-only into Alloy but still exposes container metadata; production requires managed data services, externally supplied secrets, TLS, and environment-specific alert tuning. Phase 8 is intentionally not implemented.

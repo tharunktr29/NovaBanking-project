@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: novabank-default-deny, labels: {app.kubernetes.io/part-of: novabank}}
+spec: {podSelector: {matchLabels: {app.kubernetes.io/part-of: novabank}}, policyTypes: [Ingress, Egress]}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: novabank-internal}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/part-of: novabank}}
+  policyTypes: [Ingress, Egress]
+  ingress: [{from: [{podSelector: {matchLabels: {app.kubernetes.io/part-of: novabank}}}]}]
+  egress:
+    - to: [{podSelector: {matchLabels: {app.kubernetes.io/part-of: novabank}}}]
+    - to: [{namespaceSelector: {}}]
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}, {protocol: TCP, port: 443}]

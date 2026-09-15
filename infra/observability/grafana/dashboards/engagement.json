@@ -1,0 +1,1 @@
+{"uid":"novabank-engagement","title":"Statements, Disputes and Notifications","schemaVersion":39,"version":1,"panels":[{"type":"timeseries","title":"Engagement outcomes","targets":[{"expr":"sum(rate(novabank_business_operations_total{operation=~\"statement.*|dispute.*|notification.*\"}[5m])) by (operation,outcome)"}],"gridPos":{"x":0,"y":0,"w":24,"h":8}}]}

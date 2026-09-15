@@ -64,6 +64,9 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/mfa/verify",
                                 "/actuator/health",
+                                "/actuator/health/**",
+                                "/actuator/info",
+                                "/actuator/prometheus",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"

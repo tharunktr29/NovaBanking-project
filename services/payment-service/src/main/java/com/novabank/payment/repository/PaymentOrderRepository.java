@@ -20,6 +20,8 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, UUID
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<PaymentOrder> findWithLockByIdAndCustomerId(UUID id, UUID customerId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<PaymentOrder> findWithLockById(UUID id);
 
     List<PaymentOrder> findTop25ByStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(PaymentStatus status, Instant now);
 }

@@ -1,0 +1,1 @@
+{"uid":"novabank-outbox","title":"Outbox and Dead-letter Queues","schemaVersion":39,"version":1,"panels":[{"type":"stat","title":"Outbox backlog","targets":[{"expr":"sum(novabank_outbox_unpublished)"}],"gridPos":{"x":0,"y":0,"w":12,"h":8}},{"type":"stat","title":"Oldest age","targets":[{"expr":"max(novabank_outbox_oldest_seconds)"}],"gridPos":{"x":12,"y":0,"w":12,"h":8}}]}

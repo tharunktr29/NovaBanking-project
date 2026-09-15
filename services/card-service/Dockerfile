@@ -6,8 +6,13 @@ COPY services ./services
 RUN mvn -q -pl services/card-service -am package -DskipTests
 
 FROM eclipse-temurin:21-jre AS runtime
+LABEL org.opencontainers.image.title="NovaBank card-service" org.opencontainers.image.source="https://github.com/tharunktr29/NovaBanking-project"
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN useradd --system --uid 10001 novabank
 COPY --from=build /workspace/services/card-service/target/card-service-*.jar app.jar
+RUN chown 10001:0 app.jar && chmod 0440 app.jar
+USER 10001
 EXPOSE 8085
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 CMD curl -fsS http://localhost:8085/actuator/health/readiness || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

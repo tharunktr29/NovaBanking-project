@@ -1,0 +1,15 @@
+<configuration>
+  <springProperty scope="context" name="service" source="spring.application.name" defaultValue="novabank-service"/>
+  <springProperty scope="context" name="environment" source="NOVABANK_ENVIRONMENT" defaultValue="local"/>
+  <springProperty scope="context" name="format" source="NOVABANK_LOG_FORMAT" defaultValue="CONSOLE"/>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder><pattern>%d{ISO8601} %-5level [${service},trace=%X{traceId:-},span=%X{spanId:-},correlation=%X{correlationId:-}] %logger{36} - %replace(%msg){'[\r\n]','_'}%n</pattern></encoder>
+  </appender>
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"service":"${service}","environment":"${environment}"}</customFields>
+      <includeMdcKeyName>traceId</includeMdcKeyName><includeMdcKeyName>spanId</includeMdcKeyName><includeMdcKeyName>correlationId</includeMdcKeyName>
+    </encoder>
+  </appender>
+  <root level="INFO"><appender-ref ref="${format:-CONSOLE}"/></root>
+</configuration>

@@ -1,0 +1,1 @@
+{"uid":"novabank-payments","title":"Payments and Ledger","schemaVersion":39,"version":1,"panels":[{"type":"timeseries","title":"Payment outcomes","targets":[{"expr":"sum(rate(novabank_business_operations_total{operation=~\"payment.*|transfer.*|ledger.*\"}[5m])) by (operation,outcome)"}],"gridPos":{"x":0,"y":0,"w":24,"h":8}}]}

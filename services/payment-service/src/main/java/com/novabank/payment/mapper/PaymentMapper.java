@@ -30,6 +30,8 @@ public class PaymentMapper {
                 order.getFailedAt(),
                 order.getFailureCode(),
                 order.getFailureMessage(),
+                order.getRiskAssessmentId(),
+                order.getCustomerSafeReason(),
                 order.getCreatedAt(),
                 order.getUpdatedAt()
         );
