@@ -30,8 +30,15 @@ public class SecurityConfig {
                     response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                     objectMapper.writeValue(response.getOutputStream(), ErrorResponse.of(401, "UNAUTHORIZED", "Authentication is required",
                             request.getRequestURI(), request.getHeader(Correlation.HEADER_NAME), List.of()));
+                }).accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                    objectMapper.writeValue(response.getOutputStream(), ErrorResponse.of(403, "FORBIDDEN", "Access is forbidden",
+                            request.getRequestURI(), request.getHeader(Correlation.HEADER_NAME), List.of()));
                 }))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/api/payments/internal/risk/**").hasAnyRole("FRAUD_ANALYST", "OPERATIONS_ADMIN")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

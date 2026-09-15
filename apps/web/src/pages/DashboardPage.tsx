@@ -187,7 +187,7 @@ export function DashboardPage() {
         </Box>
         <Stack direction="row" gap={1} alignItems="center">
           <Button onClick={() => dispatch(refreshSession())} variant="outlined">Refresh session</Button>
-          <Button component={RouterLink} to="/logout" variant="contained">Log out</Button>
+          <Stack direction="row" spacing={1}>{['FRAUD_ANALYST','OPERATIONS_ADMIN','SUPPORT_AGENT'].includes(auth.role ?? '') && <Button component={RouterLink} to="/risk-operations" variant="outlined">Risk Operations</Button>}<Button component={RouterLink} to="/logout" variant="contained">Log out</Button></Stack>
         </Stack>
       </Stack>
 

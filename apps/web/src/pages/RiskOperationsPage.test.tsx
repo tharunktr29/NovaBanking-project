@@ -1,0 +1,2 @@
+import {render,screen} from '@testing-library/react';import {MemoryRouter} from 'react-router-dom';import {vi,test,expect} from 'vitest';import {apiClient} from '../api/client';import {RiskOperationsPage} from './RiskOperationsPage';
+test('renders empty queue state',async()=>{vi.spyOn(apiClient,'get').mockResolvedValue({data:[]});render(<MemoryRouter><RiskOperationsPage/></MemoryRouter>);expect(await screen.findByText('No cases match these filters.')).toBeInTheDocument();});

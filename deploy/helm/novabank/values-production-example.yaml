@@ -1,0 +1,8 @@
+# Example only. Supply managed RDS/MSK/ElastiCache endpoints and External Secrets at deployment time.
+global:
+  environment: production
+  imageRegistry: 000000000000.dkr.ecr.us-east-1.amazonaws.com/
+  secretName: novabank-production-runtime
+  otlpEndpoint: http://otel-collector.observability:4318/v1/traces
+ingress: {enabled: true, className: alb, host: banking.example.invalid, tlsSecretName: novabank-production-tls}
+autoscaling: {enabled: true, minReplicas: 3, maxReplicas: 12, targetCPUUtilizationPercentage: 60}

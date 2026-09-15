@@ -1,0 +1,28 @@
+global:
+  environment: development
+  imageRegistry: ""
+  imagePullPolicy: IfNotPresent
+  secretName: novabank-runtime
+  otlpEndpoint: http://otel-collector.observability:4318/v1/traces
+  tracingSamplingProbability: "0.10"
+services:
+  api-gateway: {image: novabank-api-gateway, port: 8080, replicas: 2, public: true}
+  auth-service: {image: novabank-auth-service, port: 8081, replicas: 2}
+  customer-service: {image: novabank-customer-service, port: 8082, replicas: 2}
+  account-service: {image: novabank-account-service, port: 8083, replicas: 2}
+  transaction-service: {image: novabank-transaction-service, port: 8084, replicas: 2}
+  card-service: {image: novabank-card-service, port: 8085, replicas: 2}
+  payment-service: {image: novabank-payment-service, port: 8086, replicas: 2}
+  engagement-service: {image: novabank-engagement-service, port: 8087, replicas: 2}
+  risk-service: {image: novabank-risk-service, port: 8088, replicas: 2}
+  web: {image: novabank-web, port: 8080, replicas: 2, public: true}
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: 1000m, memory: 768Mi}
+autoscaling: {enabled: true, minReplicas: 2, maxReplicas: 6, targetCPUUtilizationPercentage: 70}
+ingress:
+  enabled: false
+  className: nginx
+  host: novabank.local
+  tlsSecretName: novabank-tls
+podDisruptionBudget: {enabled: true, minAvailable: 1}

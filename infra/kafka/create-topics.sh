@@ -40,6 +40,16 @@ topics=(
   "card.replacement-requested"
   "card.controls-updated"
   "statement.generated"
+  "transaction.created.DLT"
+  "transaction.posted.DLT"
+  "risk.assessment.completed"
+  "risk.alert.created"
+  "risk.case.created"
+  "risk.case.assigned"
+  "risk.case.resolved"
+  "risk.payment.approved"
+  "risk.payment.rejected"
+  "risk.events.DLT"
 )
 
 for topic in "${topics[@]}"; do

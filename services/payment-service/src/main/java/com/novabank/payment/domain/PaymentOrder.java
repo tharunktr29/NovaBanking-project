@@ -56,6 +56,10 @@ public class PaymentOrder {
     private PaymentFailureCode failureCode;
     @Column(name = "failure_message", length = 200)
     private String failureMessage;
+    @Column(name = "risk_assessment_id")
+    private UUID riskAssessmentId;
+    @Column(name = "customer_safe_reason", length = 240)
+    private String customerSafeReason;
     @Column(name = "correlation_id", nullable = false)
     private UUID correlationId;
     @Column(name = "created_at", nullable = false)
@@ -118,6 +122,10 @@ public class PaymentOrder {
     public void setFailureCode(PaymentFailureCode failureCode) { this.failureCode = failureCode; }
     public String getFailureMessage() { return failureMessage; }
     public void setFailureMessage(String failureMessage) { this.failureMessage = failureMessage; }
+    public UUID getRiskAssessmentId() { return riskAssessmentId; }
+    public void setRiskAssessmentId(UUID riskAssessmentId) { this.riskAssessmentId = riskAssessmentId; }
+    public String getCustomerSafeReason() { return customerSafeReason; }
+    public void setCustomerSafeReason(String customerSafeReason) { this.customerSafeReason = customerSafeReason; }
     public UUID getCorrelationId() { return correlationId; }
     public void setCorrelationId(UUID correlationId) { this.correlationId = correlationId; }
     public Instant getCreatedAt() { return createdAt; }

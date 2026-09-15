@@ -25,6 +25,8 @@ public record PaymentResponse(
         Instant failedAt,
         PaymentFailureCode failureCode,
         String failureMessage,
+        UUID riskAssessmentId,
+        String customerSafeReason,
         Instant createdAt,
         Instant updatedAt
 ) {

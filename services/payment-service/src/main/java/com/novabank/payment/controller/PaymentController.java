@@ -108,6 +108,17 @@ public class PaymentController {
                 () -> paymentService.cancel(customer, paymentId, parseCorrelation(correlationId)));
     }
 
+    @PostMapping("/api/payments/internal/risk/{paymentId}/approve")
+    PaymentResponse approve(@PathVariable UUID paymentId, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                            @RequestHeader(value = Correlation.HEADER_NAME, required = false) String correlationId) {
+        return paymentService.approveReviewed(paymentId, authorization, parseCorrelation(correlationId));
+    }
+
+    @PostMapping("/api/payments/internal/risk/{paymentId}/reject")
+    PaymentResponse reject(@PathVariable UUID paymentId, @RequestHeader(value = Correlation.HEADER_NAME, required = false) String correlationId) {
+        return paymentService.rejectReviewed(paymentId, parseCorrelation(correlationId));
+    }
+
     private UUID parseCorrelation(String correlationId) {
         try {
             return correlationId == null || correlationId.isBlank() ? UUID.randomUUID() : UUID.fromString(correlationId);

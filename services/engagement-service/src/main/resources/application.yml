@@ -15,3 +15,20 @@ novabank:
     encryption-key: ${DOCUMENT_ENCRYPTION_KEY:dev-only-document-key-change-me}
   account-service-uri: ${ACCOUNT_SERVICE_URI:http://localhost:8083}
 management.endpoints.web.exposure.include: health,info,prometheus
+
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 30s
+management.endpoint.health.probes.enabled: true
+management.endpoint.health.show-details: never
+management.metrics.tags.service: ${spring.application.name}
+management.metrics.tags.environment: ${NOVABANK_ENVIRONMENT:local}
+management.tracing.sampling.probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+management.otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+management.otlp.tracing.timeout: 5s
+spring.kafka.listener.observation-enabled: true
+spring.kafka.template.observation-enabled: true
+resilience4j.circuitbreaker.instances.accountService:
+  sliding-window-size: 20
+  minimum-number-of-calls: 10
+  failure-rate-threshold: 50
+  wait-duration-in-open-state: 10s

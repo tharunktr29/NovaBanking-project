@@ -30,7 +30,7 @@ import java.util.List;
 public class SecurityConfig {
   @Bean SecurityFilterChain chain(HttpSecurity http, JwtFilter filter) throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable).sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .authorizeHttpRequests(a -> a.requestMatchers("/actuator/health").permitAll().anyRequest().authenticated())
+      .authorizeHttpRequests(a -> a.requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll().anyRequest().authenticated())
       .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class).build();
   }
   @Component static class JwtFilter extends OncePerRequestFilter {

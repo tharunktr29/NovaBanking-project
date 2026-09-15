@@ -7,6 +7,7 @@ import com.novabank.account.repository.AccountBalanceRepository;
 import com.novabank.account.repository.AccountRepository;
 import com.novabank.account.repository.ProcessedEventRepository;
 import com.novabank.shared.events.BankingEvent;
+import com.novabank.shared.operations.OperationalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,29 +29,33 @@ public class TransactionEventConsumer {
     private final AccountBalanceRepository balanceRepository;
     private final ProcessedEventRepository processedEventRepository;
     private final AccountEventPublisher eventPublisher;
+    private final OperationalMetrics metrics;
 
     public TransactionEventConsumer(
             AccountRepository accountRepository,
             AccountBalanceRepository balanceRepository,
             ProcessedEventRepository processedEventRepository,
-            AccountEventPublisher eventPublisher
+            AccountEventPublisher eventPublisher, OperationalMetrics metrics
     ) {
         this.accountRepository = accountRepository;
         this.balanceRepository = balanceRepository;
         this.processedEventRepository = processedEventRepository;
         this.eventPublisher = eventPublisher;
+        this.metrics = metrics;
     }
 
     @KafkaListener(topics = {"transaction.created", "transaction.posted"})
     @Transactional
     public void onTransactionEvent(BankingEvent event) {
         if (processedEventRepository.existsById(event.eventId())) {
+            metrics.duplicateEvent();
             return;
         }
         try {
             processedEventRepository.saveAndFlush(new ProcessedEvent(event.eventId(), event.eventType(), event.aggregateId()));
         } catch (DataIntegrityViolationException duplicate) {
             log.info("Duplicate transaction event delivery ignored eventId={}", event.eventId());
+            metrics.duplicateEvent();
             return;
         }
         apply(event);

@@ -1,0 +1,64 @@
+groups:
+  - name: novabank-examples-tune-per-environment
+    rules:
+      - alert: NovaBankServiceUnavailable
+        expr: up{job="novabank"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "NovaBank service unavailable"}
+      - alert: NovaBankHighServerErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (service) / sum(rate(http_server_requests_seconds_count[5m])) by (service) > 0.05
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "Server error rate exceeds 5%"}
+      - alert: NovaBankHighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le,service)) > 1
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "p95 request latency exceeds one second"}
+      - alert: NovaBankDatabasePoolExhaustion
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.9
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: "Database pool above 90%"}
+      - alert: NovaBankDeadLettersGrowing
+        expr: increase(novabank_kafka_dead_letter_events_total[15m]) > 0
+        labels: {severity: warning}
+        annotations: {summary: "Dead-letter events detected"}
+      - alert: NovaBankOutboxBacklog
+        expr: novabank_outbox_oldest_seconds > 300
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Oldest unpublished outbox record exceeds five minutes"}
+      - alert: NovaBankPaymentFailure
+        expr: increase(novabank_business_operations_total{operation=~"payment.*",outcome="failure"}[10m]) > 2
+        labels: {severity: critical}
+        annotations: {summary: "Payment or compensation failures detected"}
+      - alert: NovaBankScheduledPaymentDelay
+        expr: novabank_scheduled_payment_delay_seconds > 60
+        labels: {severity: warning}
+        annotations: {summary: "Scheduled payment execution is delayed"}
+      - alert: NovaBankDocumentOrNotificationFailure
+        expr: increase(novabank_business_operations_total{operation=~"statement.*|notification.*",outcome="failure"}[15m]) > 0
+        labels: {severity: warning}
+        annotations: {summary: "Statement or notification processing failed"}
+      - alert: NovaBankRiskServiceUnavailable
+        expr: up{service="risk-service"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: "Risk screening is unavailable"}
+      - alert: NovaBankRiskReviewBacklog
+        expr: novabank_risk_open_cases{priority!="LOW"} > 20
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "Risk review backlog is growing"}
+      - alert: NovaBankRiskEvaluationLatency
+        expr: histogram_quantile(0.95, sum(rate(risk_evaluation_latency_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Risk evaluation p95 exceeds 500ms"}
+      - alert: NovaBankHighPriorityCaseUnresolved
+        expr: novabank_risk_open_cases{priority="HIGH"} > 0
+        for: 30m
+        labels: {severity: critical}
+        annotations: {summary: "High-priority risk case remains unresolved"}

@@ -1,0 +1,10 @@
+package com.novabank.risk.service;
+import com.novabank.risk.api.RiskModels.*; import com.novabank.risk.config.RiskProperties; import org.junit.jupiter.api.*; import org.springframework.jdbc.core.JdbcTemplate; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; import static org.junit.jupiter.api.Assertions.*; import static org.mockito.Mockito.*;
+class RiskEngineTest {JdbcTemplate jdbc=mock(JdbcTemplate.class);RiskEngine engine;
+ @BeforeEach void setup(){when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object[].class))).thenReturn(0);engine=new RiskEngine(new RiskProperties("v1",new BigDecimal("5000"),new BigDecimal("25000"),4,10,"http://localhost"),jdbc);}
+ private AssessmentRequest request(BigDecimal amount,Boolean payee,Integer failures,Boolean card,Integer disputes,Instant at){return new AssessmentRequest(UUID.randomUUID(),"payment:test","EXTERNAL_PAYMENT",amount,UUID.randomUUID(),UUID.randomUUID(),payee,failures,card,disputes,at,UUID.randomUUID());}
+ @Test void lowRiskAllowsDeterministically(){var r=request(new BigDecimal("50"),false,0,false,0,Instant.parse("2026-08-21T12:00:00Z"));assertEquals(Decision.ALLOW,engine.evaluate(r).decision());assertEquals(engine.evaluate(r).score(),engine.evaluate(r).score());}
+ @Test void highValueReviews(){assertEquals(Decision.REVIEW,engine.evaluate(request(new BigDecimal("5000"),false,0,false,0,Instant.parse("2026-08-21T12:00:00Z"))).decision());}
+ @Test void extremeValueDenies(){assertEquals(Decision.DENY,engine.evaluate(request(new BigDecimal("25000"),false,0,false,0,Instant.parse("2026-08-21T12:00:00Z"))).decision());}
+ @Test void combinedExplainableRulesDeny(){var x=engine.evaluate(request(new BigDecimal("10"),true,3,true,3,Instant.parse("2026-08-21T02:00:00Z")));assertEquals(Decision.DENY,x.decision());assertTrue(x.rules().contains("NEW_EXTERNAL_PAYEE"));assertTrue(x.rules().contains("REPEATED_FAILURES"));assertTrue(x.rules().contains("UNUSUAL_PAYMENT_TIME"));assertTrue(x.rules().contains("RECENT_CARD_CHANGE"));assertTrue(x.rules().contains("MULTIPLE_DISPUTES"));}
+}

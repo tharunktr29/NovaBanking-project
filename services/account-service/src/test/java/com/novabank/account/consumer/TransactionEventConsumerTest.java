@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import com.novabank.shared.operations.OperationalMetrics;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionEventConsumerTest {
@@ -70,7 +71,7 @@ class TransactionEventConsumerTest {
     }
 
     private TransactionEventConsumer consumer() {
-        return new TransactionEventConsumer(accountRepository, balanceRepository, processedEventRepository, eventPublisher);
+        return new TransactionEventConsumer(accountRepository, balanceRepository, processedEventRepository, eventPublisher, mock(OperationalMetrics.class));
     }
 
     private Account account() {
